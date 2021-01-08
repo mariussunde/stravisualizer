@@ -1,7 +1,8 @@
 import React from 'react';
-import { BrowserRouter, Route, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Strava } from 'strava';
+import ActivityItem from './activityItem'
 
 
 
@@ -24,7 +25,7 @@ class Activities extends React.Component {
                   
           ;(async () => {
             try {
-              const activities = await strava.activities.getLoggedInAthleteActivities()
+              const activities = await strava.activities.getLoggedInAthleteActivities({'per_page': 100})
               this.setState({
                   isLoaded: true,
                   storeActivities:activities
@@ -46,23 +47,47 @@ class Activities extends React.Component {
             )
         } else { 
             return (
-                <div>
-                    <h1>Activities</h1>
-                  
-                    {storeActivities.map(({ id, name, distance }) =>
-                        <Activity key={id}>{(distance / 1000).toFixed(2)}km</Activity>
+                <ActivitiesWrapper>
+                    
+                    {storeActivities.map(({ id, name, distance, type = 'Run', average_speed, map, average_cadence, moving_time, total_elevation_gain  }) => 
+                        <StyledLink key={id} to={`/activity/${id}`}>
+                            <ActivityItem
+                                type={type}
+                                id={id}
+                                cadence={average_cadence}
+                                time={moving_time}
+                                elevation={total_elevation_gain}
+                                distance={(distance / 1000).toFixed(2)}
+                                speed={average_speed}
+                                map={map.summary_polyline}
+                                />
+                        </StyledLink>
                     )}
                     
-                </div>
+                </ActivitiesWrapper>
             )
         }
     }
   }
 
- const Activity = styled.div`
-letter-spacing:-0.025em;
-font-size:5vw;
-font-family:Helvetica Neue;
- ` 
+const ActivitiesWrapper = styled.div`
+display:grid;
+width:100vw;
+grid-template-columns:repeat(12, 1fr);
+gap:0
+`
 
+
+ const StyledLink = styled(Link)`
+ text-decoration:none;
+ text-align:left;
+
+ grid-column:span 4;
+ color:#444;
+ transition:color 250ms ease;
+
+ &:hover{
+     color:black;
+ }
+`
 export default Activities;
